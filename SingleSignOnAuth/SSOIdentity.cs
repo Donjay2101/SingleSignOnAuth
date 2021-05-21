@@ -14,15 +14,6 @@ namespace SingleSignOnAuth
 	{
 		#region private variables
 
-		//internal string _userId;
-		//internal  int _userPK;
-		//internal bool _login;
-		//internal bool _isSuperUser;
-		//internal string _fullName;
-		//internal string _email;
-		//internal string _roles;
-		//internal string _givenName;
-		//internal string _familyName;
 	
 
 		#endregion

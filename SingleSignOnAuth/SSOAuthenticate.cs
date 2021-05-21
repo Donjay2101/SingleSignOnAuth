@@ -55,7 +55,7 @@ namespace SingleSignOnAuth
 		const string SCOPE_KEY = "SSO.Scope";
 		const string REDIRECT_URI_KEY = "SSO.RedirectURI";
 		const string TOKEN_URI_KEY = "SSO.TokenURI";
-		const string CERT_KEY = "SSO.CERT";
+
 
 		protected  override bool AuthorizeCore(HttpContextBase httpContext)
 		{
@@ -66,7 +66,7 @@ namespace SingleSignOnAuth
 			string clientSecret = ConfigurationManager.AppSettings[CLIENT_SECRET_KEY];
 			string redirectUri = ConfigurationManager.AppSettings[REDIRECT_URI_KEY];
 			string tokenUri = ConfigurationManager.AppSettings[TOKEN_URI_KEY];
-			string cert = ConfigurationManager.AppSettings[CERT_KEY];
+		
 
 			var request  = httpContext.Request; 
 			var response = httpContext.Response;
