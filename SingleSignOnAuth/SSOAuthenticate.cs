@@ -15,7 +15,7 @@ using System.Web.Mvc;
 namespace SingleSignOnAuth
 {
 
-    public class SSOInformation
+	public class SSOInformation
 	{
 		[JsonProperty("access_token")]
 		public string AccessToken { get; set; }
@@ -44,9 +44,8 @@ namespace SingleSignOnAuth
 		public DateTime TimeStamp { get; set; }
 	}
 
-	public class SSOAuthenticate: AuthorizeAttribute
-	{
-
+	public class SSOAuthenticate :  AuthorizeAttribute
+	{ 
        
         const string LOGINURL_KEY = "SSO.LoginURI";
 		const string CLIENTID_KEY = "SSO.ClientID";
@@ -55,10 +54,11 @@ namespace SingleSignOnAuth
 		const string SCOPE_KEY = "SSO.Scope";
 		const string REDIRECT_URI_KEY = "SSO.RedirectURI";
 		const string TOKEN_URI_KEY = "SSO.TokenURI";
-
-
-		protected  override bool AuthorizeCore(HttpContextBase httpContext)
-		{
+       
+    
+        protected override bool AuthorizeCore(HttpContextBase httpContext)
+        {
+			bool isAuthenticated=false;
 			string loginUrl = ConfigurationManager.AppSettings[LOGINURL_KEY];
 			string clientID = ConfigurationManager.AppSettings[CLIENTID_KEY];
 			string tenantID = ConfigurationManager.AppSettings[TENANTID_KEY];
@@ -66,14 +66,14 @@ namespace SingleSignOnAuth
 			string clientSecret = ConfigurationManager.AppSettings[CLIENT_SECRET_KEY];
 			string redirectUri = ConfigurationManager.AppSettings[REDIRECT_URI_KEY];
 			string tokenUri = ConfigurationManager.AppSettings[TOKEN_URI_KEY];
-		
 
-			var request  = httpContext.Request; 
+			
+			var request = httpContext.Request;
 			var response = httpContext.Response;
 
 
-       
-			
+
+
 			string cookieName = ".SSO_AUTH"; //ConfigurationManager.AppSettings[AUTHENTICATION_COOKIE_KEY];
 			if (cookieName == null || cookieName.Trim() == String.Empty)
 			{
@@ -97,23 +97,21 @@ namespace SingleSignOnAuth
 						SSOPrincipal principal = new SSOPrincipal(userIdentity, arrRoles, claims);
 						httpContext.User = principal;
 						Thread.CurrentPrincipal = principal;
+						isAuthenticated = userIdentity.IsAuthenticated;
 					}
-
-					return true;
 				}
-
 			}
 
-			
+
 			if (loginUrl == null || loginUrl.Trim() == String.Empty)
 			{
 				throw new Exception(" SSOAuthentication.LoginUrl entry not found in appSettings section of Web.config");
 			}
+
+
 			loginUrl += $"/{tenantID}/oauth2/v2.0/authorize/?client_id={clientID}&response_type=code&scope={scopes}";
 
-
-
-			if (request.QueryString.HasKeys() && request.QueryString.GetValues("code").Length > 0)
+			if (!isAuthenticated && request.QueryString.HasKeys() && request.QueryString.GetValues("code").Length > 0)
 			{
 				string code = request.QueryString.GetValues("code")[0];
 
@@ -138,43 +136,44 @@ namespace SingleSignOnAuth
 				if (tokeninfo != null)
 				{
 					var token = DecodeJWT(tokeninfo.AccessToken);
-					if(token != null)
-                    {
+					if (token != null)
+					{
 						object userID, upk, email;
 						token.TryGetValue("upn", out userID);
 						token.TryGetValue("unique_name", out upk);
 						token.TryGetValue("email", out email);
 
-						SSOIdentity userIdentity = new SSOIdentity((string)userID, 0, true, false, "", (string)email, "",token);
-						SSOPrincipal principal = new SSOPrincipal(userIdentity, null,token);
+						SSOIdentity userIdentity = new SSOIdentity((string)userID, 0, true, false, "", (string)email, "", token);
+						SSOPrincipal principal = new SSOPrincipal(userIdentity, null, token);
 						httpContext.User = principal;
 						Thread.CurrentPrincipal = principal;
-						
-						SSOAuthentication.RedirectFromLoginPage(userIdentity, redirectUri,tokeninfo.ExpiresIn);
-						return false;
-					}
+
+						isAuthenticated= SSOAuthentication.RedirectFromLoginPage(userIdentity, redirectUri, tokeninfo.ExpiresIn);
+                    }
                     else
                     {
-                        response.RedirectPermanent(loginUrl, true);
+						isAuthenticated = false;
                     }
-                }
+				}
 
 			}
-			if (!request.Path.Contains(loginUrl))
-			{
-				response.RedirectPermanent(loginUrl, true);
+
+            if (!isAuthenticated)
+            {
+				response.RedirectPermanent(loginUrl);
 			}
-			return false;
+			
+			return isAuthenticated;
 		}
 
 
-		/// <summary>
-		/// Returns an instance decrypted token values, 
-		/// given an encrypted token  obtained from SSO.
-		/// </summary>
-		/// <param name="token">access token to decrypty</param>
-		/// <returns>SSOIdentity object</returns>
-		Dictionary<string,object> DecodeJWT(string token)
+        /// <summary>
+        /// Returns an instance decrypted token values, 
+        /// given an encrypted token  obtained from SSO.
+        /// </summary>
+        /// <param name="token">access token to decrypty</param>
+        /// <returns>SSOIdentity object</returns>
+        Dictionary<string,object> DecodeJWT(string token)
         {
 			try
 			{

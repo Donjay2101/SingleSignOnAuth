@@ -4,6 +4,7 @@ using System.Collections;
 using System.Reflection;
 using System.Text;
 using System.Web;
+using System.Web.Mvc;
 using System.Web.Security;
 
 namespace SingleSignOnAuth
@@ -61,7 +62,7 @@ namespace SingleSignOnAuth
 		/// Redirects an authenticated user back to the originally requested URL.
 		/// </summary>
 		/// <param name="identity">SSOIdentity of an authenticated user</param>
-		public static void RedirectFromLoginPage(SSOIdentity identity, string redirectUri, int tokenExpirationTime = 3600)
+		public static bool RedirectFromLoginPage(SSOIdentity identity, string redirectUri, int tokenExpirationTime = 3600)
 		{
 			string cookieName = ".SSO_AUTH";// ConfigurationManager.AppSettings[AUTHENTICATION_COOKIE_KEY];
 			if (cookieName == null || cookieName.Trim() == String.Empty)
@@ -80,23 +81,7 @@ namespace SingleSignOnAuth
 			HttpCookie userCookie = new HttpCookie(cookieName.ToUpper(), encryptedUserDetails);
 			userCookie.Expires = DateTime.Now.AddSeconds(tokenExpirationTime);
 			response.Cookies.Add(userCookie);
-            //response.RedirectToRoutePermanent(redirectUri);
-            //return true;
-            string returnUrl = request["ReturnUrl"];
-            string state = request.QueryString.Get("state");
-            if (!string.IsNullOrEmpty(state) && state != null)
-            {
-                var stateBytes = Convert.FromBase64String(state);
-                returnUrl = Encoding.UTF8.GetString(stateBytes);
-            }
-            if (returnUrl != null && returnUrl.Trim() != String.Empty)
-            {
-                response.RedirectPermanent(returnUrl,true);
-            }
-            else
-            {
-                response.RedirectPermanent("/",true);
-            }
+			return true;
         }
 
 		#endregion
