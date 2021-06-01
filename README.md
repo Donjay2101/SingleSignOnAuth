@@ -20,6 +20,15 @@ after adding above settings need to add attribute to controller which needs to b
 [SSOAuthenicate]
  public class HomeController : Controller
  {
+ 
  }
  
- 
+
+to get all claims and related authenticated user information, you can wire this code :
+var principal = HttpContext.User as SSOPrincipal;
+if (principal != null)
+{
+  //principal.Claims : will have all claims which you can convert according to your need.
+  //principal.Identity : will give all information regarding the identity like name,email,upn and everything.
+    principal.
+}
