@@ -1,0 +1,2 @@
+this is the updated version for package "Security.Authentication.SingleSignOn".
+this package has the flexibility to use the code without using the custom attibute which was in last package. Now user can use the package and use code according to their needs.

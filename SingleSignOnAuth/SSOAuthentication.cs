@@ -2,17 +2,13 @@
 using System;
 using System.Collections;
 using System.Reflection;
-using System.Text;
 using System.Web;
-using System.Web.Mvc;
 using System.Web.Security;
 
 namespace SingleSignOnAuth
 {
     public sealed class SSOAuthentication
 	{
-	
-
 		#region static methods
 		/// <summary>
 		/// Produces a string containing an encrypted string for an authenticated User Identity
